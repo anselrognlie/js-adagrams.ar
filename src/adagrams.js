@@ -75,7 +75,7 @@ const drawLettersForHandSize = (handSize) => {
   const pool = [];
   for (const letter in kLetterCounts) {
     const count = kLetterCounts[letter];
-    for (let i = 0;i < count; ++i) {
+    for (let i = 0; i < count; ++i) {
       pool.push(letter);
     }
   }
@@ -91,18 +91,14 @@ const drawLettersForHandSize = (handSize) => {
 };
 
 export const drawLetters = () => {
-  // const c = new MyClass();
-  // console.log(c.getValue());
-  // console.log(MyClass.getDescription());
-
   return drawLettersForHandSize(kHandSize);
 };
 
 const makeFrequencyMap = (from) => {
   const map = {};
 
-  for (let i = 0; i < from.length; ++i) {
-    const letter = from[i].toUpperCase();
+  for (const rawLetter of from) {
+    const letter = rawLetter.toUpperCase();
     const count = map[letter] || 0;
     map[letter] = count + 1;
   }
@@ -148,6 +144,7 @@ export const scoreWord = (word) => {
 export const highestScoreFrom = (words) => {
   let highScore = -1;
   let highWords = [];
+
   for (const word of words) {
     const score = scoreWord(word);
 
