@@ -92,10 +92,6 @@ const drawLettersForHandSize = (handSize, letterCounts) => {
   return pool.slice(0, handSize);
 };
 
-export const drawLetters = () => {
-  return drawLettersForHandSize(kHandSize, kLetterCounts);
-};
-
 const makeFrequencyMap = (from) => {
   const map = {};
 
@@ -118,13 +114,6 @@ const isMapSubset = (outer, inner) => {
   return true;
 };
 
-export const usesAvailableLetters = (input, lettersInHand) => {
-  const inputCounts = makeFrequencyMap(input);
-  const handCounts = makeFrequencyMap(lettersInHand);
-
-  return isMapSubset(handCounts, inputCounts);
-};
-
 const scoreWordUsingLetterScores = (word, letterScores, bonusLength, lengthBonus) => {
   let score = 0;
 
@@ -142,15 +131,6 @@ const scoreWordUsingLetterScores = (word, letterScores, bonusLength, lengthBonus
     (score, letter) => score + letterScores[letter.toUpperCase()], score);
 
   return score;
-};
-
-export const scoreWord = (word) => {
-  return scoreWordUsingLetterScores(
-    word, 
-    kLetterScores,
-    kLongWordMinLength, 
-    kLongBonus
-  );
 };
 
 const getShortestWordUnlessUsesWholeHand = (words, handSize) => {
@@ -193,6 +173,26 @@ const highestWordScoreWithHandSize = (words, handSize) => {
   const word = getShortestWordUnlessUsesWholeHand(highWords, handSize);
 
   return { word, score };
+};
+
+export const drawLetters = () => {
+  return drawLettersForHandSize(kHandSize, kLetterCounts);
+};
+
+export const usesAvailableLetters = (input, lettersInHand) => {
+  const inputCounts = makeFrequencyMap(input);
+  const handCounts = makeFrequencyMap(lettersInHand);
+
+  return isMapSubset(handCounts, inputCounts);
+};
+
+export const scoreWord = (word) => {
+  return scoreWordUsingLetterScores(
+    word, 
+    kLetterScores,
+    kLongWordMinLength, 
+    kLongBonus
+  );
 };
 
 export const highestScoreFrom = (words) => {
