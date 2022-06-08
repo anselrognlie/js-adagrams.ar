@@ -57,9 +57,22 @@ const kLetterScores = {
 };
 
 const kHandSize = 10;
+const kLongBonus = 8;
+const kLongWordMinLength = 7;
+
 
 const getRandomInt = (max) => {
   return Math.floor(Math.random() * max);
+};
+
+const buildPool = (letterCounts) => {
+  const pool = [];
+  for (const letter in letterCounts) {
+    const count = letterCounts[letter];
+    pool.push(...Array(count).fill(letter));
+  }
+
+  return pool;
 };
 
 const shuffleInPlace = (pool) => {
@@ -71,27 +84,16 @@ const shuffleInPlace = (pool) => {
   }
 };
 
-const drawLettersForHandSize = (handSize) => {
-  const pool = [];
-  for (const letter in kLetterCounts) {
-    const count = kLetterCounts[letter];
-    for (let i = 0; i < count; ++i) {
-      pool.push(letter);
-    }
-  }
+const drawLettersForHandSize = (handSize, letterCounts) => {
+  const pool = buildPool(letterCounts);
 
   shuffleInPlace(pool)
 
-  const hand = [];
-  for (let i = 0; i < handSize; ++i) {
-    hand.push(pool[i]);
-  }
-
-  return hand;
+  return pool.slice(0, handSize);
 };
 
 export const drawLetters = () => {
-  return drawLettersForHandSize(kHandSize);
+  return drawLettersForHandSize(kHandSize, kLetterCounts);
 };
 
 const makeFrequencyMap = (from) => {
@@ -123,25 +125,51 @@ export const usesAvailableLetters = (input, lettersInHand) => {
   return isMapSubset(handCounts, inputCounts);
 };
 
-const kLongBonus = 8;
-const kLongWordMinLength = 7;
-
-export const scoreWord = (word) => {
+const scoreWordUsingLetterScores = (word, letterScores, bonusLength, lengthBonus) => {
   let score = 0;
 
-  for (const letter of word) {
-    const lookup = letter.toUpperCase();
-    score += kLetterScores[lookup];
+  if (word.length >= bonusLength) {
+    score = lengthBonus;
   }
+  
+  // for (const letter of word) {
+  //   const lookup = letter.toUpperCase();
+  //   score += letterScores[lookup];
+  // }
 
-  if (word.length >= kLongWordMinLength) {
-    score += kLongBonus;
-  }
+  // does anyone seriously think this is more legible than the above code?
+  score = word.split('').reduce(
+    (score, letter) => score + letterScores[letter.toUpperCase()], score);
 
   return score;
 };
 
-export const highestScoreFrom = (words) => {
+export const scoreWord = (word) => {
+  return scoreWordUsingLetterScores(
+    word, 
+    kLetterScores,
+    kLongWordMinLength, 
+    kLongBonus
+  );
+};
+
+const getShortestWordUnlessUsesWholeHand = (words, handSize) => {
+  let highWord = null;
+  for (const word of words) {
+    if (word.length == handSize) {
+      highWord = word;
+      break;
+    }
+
+    if (!highWord || word.length < highWord.length) {
+      highWord = word;
+    }
+  }
+
+  return highWord;
+};
+
+const getHighestScoreAndWords = (words) => {
   let highScore = -1;
   let highWords = [];
 
@@ -156,17 +184,17 @@ export const highestScoreFrom = (words) => {
     }
   }
 
-  let highWord = null;
-  for (const word of highWords) {
-    if (word.length == kHandSize) {
-      highWord = word;
-      break;
-    }
+  return { highScore, highWords };
+};
 
-    if (!highWord || word.length < highWord.length) {
-      highWord = word;
-    }
-  }
+const highestWordScoreWithHandSize = (words, handSize) => {
+  const { highScore: score, highWords } = getHighestScoreAndWords(words);
 
-  return { word: highWord, score: highScore };
+  const word = getShortestWordUnlessUsesWholeHand(highWords, handSize);
+
+  return { word, score };
+};
+
+export const highestScoreFrom = (words) => {
+  return highestWordScoreWithHandSize(words, kHandSize);
 };
